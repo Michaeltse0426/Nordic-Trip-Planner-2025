@@ -630,7 +630,7 @@
     }
   </script>
 <script>
-// === Currency & Weather ===
+const API_KEY = '77c94a0c472b21822cff6f94ef50375d';
 
 const weatherZhMap = {
   "Clear": "晴",
@@ -651,11 +651,11 @@ function loadRates() {
   const data = localStorage.getItem('exchangeRates');
   return data ? JSON.parse(data) : { rates: {EUR: 9.1, DKK: 1.23}, updatedAt: null };
 }
-async function fetchExchangeRates() {
+async function fetchExchangeRates(retry = 0) {
   try {
-    const res = await fetch('https://api.exchangerate.host/latest?base=HKD&symbols=EUR,DKK');
+    const res = await fetch(`https://api.exchangeratesapi.io/v1/latest?access_key=${API_KEY}&base=HKD&symbols=EUR,DKK`);
     const data = await res.json();
-    // Convert HKD base -> HKD per EUR = 1 / data.rates.EUR
+    if (!data.success) throw new Error(data.error?.info || 'API error');
     const rates = {
       EUR: 1 / data.rates.EUR,
       DKK: 1 / data.rates.DKK
@@ -666,6 +666,9 @@ async function fetchExchangeRates() {
     return record;
   } catch(e) {
     console.error("Fetch rates failed", e);
+    if (retry < 3) {
+      setTimeout(() => fetchExchangeRates(retry + 1), 30000); // Retry after 30s
+    }
     return loadRates();
   }
 }
@@ -687,7 +690,6 @@ function loadWeather() {
 }
 async function fetchWeather(city) {
   try {
-    // Using Open-Meteo free API example (lat/lon fixed for demonstration)
     const coords = {
       "Copenhagen": {lat:55.6761, lon:12.5683},
       "Helsinki": {lat:60.1699, lon:24.9384},
@@ -698,7 +700,6 @@ async function fetchWeather(city) {
     const res = await fetch(url);
     const data = await res.json();
     const temp = data.current_weather.temperature;
-    const code = data.current_weather.weathercode || 0;
     const zh = "晴";
     const weather = { city, temp, desc: zh, updatedAt: new Date().toISOString() };
     saveWeather(weather);

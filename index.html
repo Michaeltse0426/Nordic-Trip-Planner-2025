@@ -630,113 +630,104 @@
     }
   </script>
 <script>
-function saveToStorage() {
-    localStorage.setItem('nordicTripExpenses', JSON.stringify(expenses));
+// === Currency & Weather ===
+
+const weatherZhMap = {
+  "Clear": "晴",
+  "Partly Cloudy": "多雲",
+  "Cloudy": "多雲",
+  "Rain": "雨",
+  "Thunderstorm": "雷雨",
+  "Snow": "雪",
+  "Drizzle": "毛毛雨",
+  "Fog": "霧",
+  "Haze": "霧霾"
+};
+
+function saveRates(rates) {
+  localStorage.setItem('exchangeRates', JSON.stringify(rates));
 }
-function loadFromStorage() {
-    const data = localStorage.getItem('nordicTripExpenses');
-    if (data) {
-        const parsed = JSON.parse(data);
-        for (let day in parsed) {
-            if (expenses[day]) expenses[day] = parsed[day];
-        }
-    }
+function loadRates() {
+  const data = localStorage.getItem('exchangeRates');
+  return data ? JSON.parse(data) : { rates: {EUR: 9.1, DKK: 1.23}, updatedAt: null };
 }
-function renderExpenses(dayKey) {
-    const tbody = document.querySelector(`#expenses-${dayKey} tbody`);
-    tbody.innerHTML = '';
-    let total = 0;
-    expenses[dayKey].forEach((item, idx) => {
-        total += item.amount;
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${item.editing ? `<input type="text" value="${item.name}" data-edit-field="name">` : item.name}</td>
-          <td>${item.editing ? `<select data-edit-field="category"><option value="飲食" ${item.category==='飲食'?'selected':''}>飲食</option><option value="交通" ${item.category==='交通'?'selected':''}>交通</option><option value="住宿" ${item.category==='住宿'?'selected':''}>住宿</option><option value="門票" ${item.category==='門票'?'selected':''}>門票</option><option value="其他" ${item.category==='其他'?'selected':''}>其他</option></select>` : item.category}</td>
-          <td>${item.editing ? `<input type="number" value="${item.amount}" data-edit-field="amount" min="0" step="0.1">` : item.amount.toFixed(2)}</td>
-          <td>${item.editing ? `<button class="save-btn" onclick="saveEdit('${dayKey}', '${item.id}')">保存</button><button class="cancel-btn" onclick="cancelEdit('${dayKey}', '${item.id}')">取消</button>` : `<button class="edit-btn" onclick="editExpense('${dayKey}', '${item.id}')">編輯</button><button class="delete-btn" onclick="deleteExpense('${dayKey}', '${item.id}')">刪除</button>`}</td>
-        `;
-        tbody.appendChild(tr);
-    });
-    document.getElementById(`totals-${dayKey}`).innerText = `合計：HK$${total.toFixed(2)}`;
+async function fetchExchangeRates() {
+  try {
+    const res = await fetch('https://api.exchangerate.host/latest?base=HKD&symbols=EUR,DKK');
+    const data = await res.json();
+    // Convert HKD base -> HKD per EUR = 1 / data.rates.EUR
+    const rates = {
+      EUR: 1 / data.rates.EUR,
+      DKK: 1 / data.rates.DKK
+    };
+    const record = { rates: rates, updatedAt: new Date().toISOString() };
+    saveRates(record);
+    renderRates(record);
+    return record;
+  } catch(e) {
+    console.error("Fetch rates failed", e);
+    return loadRates();
+  }
 }
-function addExpense(dayKey) {
-    const form = document.querySelector(`.expense-form[data-day="${dayKey}"]`);
-    const name = form.querySelector('input[name="name"]').value.trim();
-    const category = form.querySelector('select[name="category"]').value;
-    const amountRaw = parseFloat(form.querySelector('input[name="amount"]').value);
-    const currency = form.querySelector('select[name="currency"]').value;
-    if (!name || isNaN(amountRaw)) {
-        alert('請輸入完整項目及金額');
-        return;
-    }
-    const rates = { HKD: 1, EUR: 9.1, DKK: 1.23 };
-    const amount = amountRaw * (rates[currency] || 1);
-    expenses[dayKey].push({ id: generateId(), name, category, amount });
-    form.querySelector('input[name="name"]').value = '';
-    form.querySelector('input[name="amount"]').value = '';
-    form.querySelector('select[name="currency"]').value = 'HKD';
-    renderExpenses(dayKey);
-    updateSummary();
-    saveToStorage();
+function renderRates(record) {
+  const container = document.getElementById('exchange-rates') || document.createElement('div');
+  container.id = 'exchange-rates';
+  const dateStr = record.updatedAt ? new Date(record.updatedAt).toLocaleString('zh-HK') : '無更新';
+  container.innerHTML = `匯率更新時間：${dateStr}<br>EUR → HKD: ${record.rates.EUR.toFixed(2)}<br>DKK → HKD: ${record.rates.DKK.toFixed(2)}`;
+  document.body.appendChild(container);
 }
-function editExpense(dayKey, id) {
-    expenses[dayKey] = expenses[dayKey].map(item => item.id === id ? { ...item, editing: true } : item);
-    renderExpenses(dayKey);
+
+// Weather
+function saveWeather(weather) {
+  localStorage.setItem('weatherData', JSON.stringify(weather));
 }
-function saveEdit(dayKey, id) {
-    const tbody = document.querySelector(`#expenses-${dayKey} tbody`);
-    expenses[dayKey] = expenses[dayKey].map((item, index) => {
-        if (item.id === id) {
-            const row = tbody.children[index];
-            const newName = row.querySelector('[data-edit-field="name"]').value;
-            const newCategory = row.querySelector('[data-edit-field="category"]').value;
-            const newAmount = parseFloat(row.querySelector('[data-edit-field="amount"]').value);
-            return { id: item.id, name: newName, category: newCategory, amount: newAmount };
-        }
-        return item;
-    });
-    renderExpenses(dayKey);
-    updateSummary();
-    saveToStorage();
+function loadWeather() {
+  const data = localStorage.getItem('weatherData');
+  return data ? JSON.parse(data) : {};
 }
-function cancelEdit(dayKey, id) {
-    expenses[dayKey] = expenses[dayKey].map(item => item.id === id ? { ...item, editing: false } : item);
-    renderExpenses(dayKey);
+async function fetchWeather(city) {
+  try {
+    // Using Open-Meteo free API example (lat/lon fixed for demonstration)
+    const coords = {
+      "Copenhagen": {lat:55.6761, lon:12.5683},
+      "Helsinki": {lat:60.1699, lon:24.9384},
+      "Tallinn": {lat:59.4370, lon:24.7536}
+    };
+    const loc = coords[city] || coords["Copenhagen"];
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current_weather=true`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const temp = data.current_weather.temperature;
+    const code = data.current_weather.weathercode || 0;
+    const zh = "晴";
+    const weather = { city, temp, desc: zh, updatedAt: new Date().toISOString() };
+    saveWeather(weather);
+    renderWeather(weather);
+    return weather;
+  } catch(e) {
+    console.error("Fetch weather failed", e);
+    return loadWeather();
+  }
 }
-function deleteExpense(dayKey, id) {
-    expenses[dayKey] = expenses[dayKey].filter(item => item.id !== id);
-    renderExpenses(dayKey);
-    updateSummary();
-    saveToStorage();
+function renderWeather(weather) {
+  const container = document.getElementById('weather-info') || document.createElement('div');
+  container.id = 'weather-info';
+  const dateStr = weather.updatedAt ? new Date(weather.updatedAt).toLocaleString('zh-HK') : '無更新';
+  container.innerHTML = `${dateStr}  ${weather.city}：${weather.temp}°C ☀️ ${weather.desc}`;
+  document.body.insertBefore(container, document.body.firstChild);
 }
-function updateSummary() {
-    let grandTotal = 0;
-    const categoryTotals = {};
-    for (const day in expenses) {
-        expenses[day].forEach(item => {
-            grandTotal += item.amount;
-            categoryTotals[item.category] = (categoryTotals[item.category] || 0) + item.amount;
-        });
-    }
-    let html = `<p>目前總支出：<strong>HK$${grandTotal.toFixed(2)}</strong></p>`;
-    html += '<ul>';
-    for (const cat in categoryTotals) {
-        html += `<li>${cat}：HK$${categoryTotals[cat].toFixed(2)}</li>`;
-    }
-    html += '</ul>';
-    document.getElementById('summary').innerHTML = html;
-}
-window.addEventListener('DOMContentLoaded', () => {
-    loadFromStorage();
-    for (const day in expenses) {
-        renderExpenses(day);
-    }
-    updateSummary();
+
+// Initialize on DOM load
+window.addEventListener('DOMContentLoaded', async () => {
+  const rates = await fetchExchangeRates();
+  renderRates(rates);
+  const weather = await fetchWeather('Copenhagen');
+  renderWeather(weather);
 });
 </script><script>
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js').then(() => {
-        console.log('Service Worker Registered');
-    });
+  navigator.serviceWorker.register('service-worker.js').then(() => {
+    console.log('Service Worker Registered');
+  });
 }
 </script></body></html>

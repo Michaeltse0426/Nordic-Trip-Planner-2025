@@ -91,8 +91,87 @@
       color: #fff;
     }
   </style>
-<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/><link href="manifest.json" rel="manifest"/></head>
-<body>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/><link href="manifest.json" rel="manifest"/><style>
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f5f7fa;
+  margin: 0;
+  padding: 0;
+}
+
+#weather-info {
+  background: linear-gradient(to right, #74ebd5, #ACB6E5);
+  padding: 12px;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+#error-display {
+  background-color: #ff4d4f;
+  color: white !important;
+  padding: 6px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.trip-card {
+  background: white;
+  margin: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.trip-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #20415a;
+}
+
+.trip-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.trip-item:last-child {
+  border-bottom: none;
+}
+
+.trip-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.trip-button:hover {
+  background-color: #45a049;
+}
+
+#exchange-rates {
+  background: white;
+  margin: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  font-size: 14px;
+  color: #333;
+}
+</style></head>
+<body><div class="trip-card"><div class="trip-title">2025-08-10 哥本哈根行程</div><div class="trip-item"><span>新港 Nyhavn</span><button class="trip-button" onclick="alert('開啟官網（示例）')">🌐 官網</button></div><div class="trip-item"><span>小美人魚雕像</span><button class="trip-button" onclick="alert('開啟官網（示例）')">🌐 官網</button></div><div class="trip-item"><span>阿美琳堡宮</span><button class="trip-button" onclick="alert('開啟官網（示例）')">🌐 官網</button></div><div class="trip-item"><span>羅森堡宮</span><button class="trip-button" onclick="alert('開啟官網（示例）')">🌐 官網</button></div></div>
 <header>
 <h1>北歐設計與文化慢旅 – 行程與消費記錄</h1>
 <p>2025 年 8 月</p>

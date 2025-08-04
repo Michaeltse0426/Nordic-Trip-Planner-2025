@@ -664,7 +664,7 @@ function loadRates() {
 }
 async function fetchExchangeRates(retry = 0) {
   try {
-    const res = await fetch('https://api.exchangerate.host/latest?base=HKD&symbols=EUR,DKK');
+    const res = await fetch('https://api.frankfurter.app/latest?from=HKD&to=EUR,DKK');
     const data = await res.json();
     if (!data || !data.rates) throw new Error('API返回無效數據');
     const rates = {
@@ -674,7 +674,7 @@ async function fetchExchangeRates(retry = 0) {
     const record = { rates: rates, updatedAt: new Date().toISOString() };
     saveRates(record);
     renderRates(record);
-    displayError(''); // 清空錯誤
+    displayError('');
     return record;
   } catch(e) {
     console.error("Fetch rates failed", e);

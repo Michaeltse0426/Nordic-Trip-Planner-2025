@@ -6,19 +6,39 @@
 <title>北歐設計與文化慢旅 – 行程與消費記錄</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon-192.png">
-<!-- Full animations, haptics, and iOS-style toast implemented in script (mockup for deployment) -->
 </head>
 <body>
   <header>
     <h1>北歐設計與文化慢旅 – 行程與消費記錄</h1>
     <p>2025 年 8 月</p>
+    <div id="exchangeRates">Loading exchange rates...</div>
   </header>
   <main id="itinerary"></main>
   <button id="refreshButton">🔄</button>
   <div id="toast" style="display:none;">Weather & Rates Updated ✅<br><span id="toastTime"></span></div>
+  <div id="versionBadge" style="position:fixed;bottom:10px;right:10px;background:#20415a;color:#fff;padding:5px 10px;border-radius:10px;opacity:0.7;">v12</div>
   <audio id="refreshSound" src="refresh.mp3" preload="auto"></audio>
 <script>
-  // Placeholder script: Full weather, rates, caching, animations, toast, haptics logic goes here
+// Placeholder for full premium logic: fetch weather & rates, auto/manual refresh, toast & haptic
+async function loadItinerary() {
+  const res = await fetch('itinerary.json');
+  const data = await res.json();
+  const container = document.getElementById('itinerary');
+  container.innerHTML = '';
+  data.forEach(day => {
+    const card = document.createElement('div');
+    card.style = 'background:#fff;margin:20px;padding:20px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);';
+    card.innerHTML = `<h3>${day.date} ${day.title}</h3>
+                      <div class="weather">天氣資料載入中...</div>
+                      <ul>${day.places.map(p => `<li>${p}</li>`).join('')}</ul>`;
+    container.appendChild(card);
+  });
+}
+document.getElementById('refreshButton').addEventListener('click', () => {
+  document.getElementById('refreshSound').play();
+  loadItinerary();
+});
+loadItinerary();
 </script>
 </body>
 </html>

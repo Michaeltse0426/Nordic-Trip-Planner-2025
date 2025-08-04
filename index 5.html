@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北歐設計與文化慢旅 – 行程與消費記錄</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #333; }
+        header { background: #20415a; color: #fff; padding: 20px; text-align: center; font-size: 1.5em; }
+        .trip-container { padding: 20px; }
+        .trip-card { background: white; margin-bottom: 20px; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .trip-card h2 { margin-top: 0; }
+        .city { font-weight: bold; margin-bottom: 10px; }
+        ul { padding-left: 20px; }
+    </style>
+</head>
+<body>
+    <header>北歐設計與文化慢旅 – 行程與消費記錄<br>2025 年 8 月</header>
+    <div class="trip-container" id="trip-container"></div>
+
+    <script>
+        // Embedded itinerary JSON to ensure offline functionality
+        const itinerary = [
+            {
+                "date": "2025-08-10",
+                "city": "Copenhagen",
+                "items": ["新港 Nyhavn", "小美人魚雕像", "阿美琳堡宮", "羅森堡宮"]
+            },
+            {
+                "date": "2025-08-11",
+                "city": "Copenhagen",
+                "items": ["圓塔 Round Tower", "大理石教堂 Marble Church", "國家美術館 SMK"]
+            },
+            {
+                "date": "2025-08-12",
+                "city": "Copenhagen",
+                "items": ["克里斯蒂安堡宮", "市政廳廣場", "步行街 Stroget"]
+            },
+            {
+                "date": "2025-08-17",
+                "city": "Helsinki",
+                "items": ["芬蘭國家博物館", "卡皮耶利咖啡館", "羅伊利海邊桑拿"]
+            },
+            {
+                "date": "2025-08-18",
+                "city": "Helsinki",
+                "items": ["阿拉斯海水泳池", "馬里美歌設計店", "Esplanadi 公園"]
+            },
+            {
+                "date": "2025-08-19",
+                "city": "Helsinki",
+                "items": ["自由購物或重訪喜愛景點"]
+            }
+        ];
+
+        const container = document.getElementById('trip-container');
+
+        itinerary.forEach(day => {
+            const card = document.createElement('div');
+            card.className = 'trip-card';
+            card.innerHTML = `<h2>${day.date} ${day.city} 行程</h2>`;
+            const list = document.createElement('ul');
+            day.items.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                list.appendChild(li);
+            });
+            card.appendChild(list);
+            container.appendChild(card);
+        });
+    </script>
+</body>
+</html>

@@ -831,4 +831,68 @@ if ('serviceWorker' in navigator) {
     console.log('Service Worker Registered');
   });
 }
+</script><script>
+// === Auto Itinerary Generation ===
+const itinerary = {
+  "2025-08-10": {
+    city: "哥本哈根",
+    spots: ["新港 Nyhavn", "小美人魚雕像", "阿美琳堡宮", "羅森堡宮"]
+  },
+  "2025-08-11": {
+    city: "哥本哈根",
+    spots: ["圓塔 Round Tower", "大理石教堂 Marble Church", "國家美術館 SMK"]
+  },
+  "2025-08-12": {
+    city: "哥本哈根",
+    spots: ["克里斯蒂安堡宮", "市政廳廣場", "步行街 Stroget"]
+  }
+};
+
+function generateItinerary() {
+  const container = document.createElement('div');
+  for (const [date, data] of Object.entries(itinerary)) {
+    const card = document.createElement('div');
+    card.className = 'trip-card collapsible';
+    
+    const title = document.createElement('div');
+    title.className = 'trip-title';
+    title.textContent = `${date} ${data.city}行程`;
+    card.appendChild(title);
+
+    const spotList = document.createElement('div');
+    spotList.className = 'spot-list';
+    spotList.style.display = 'none';
+
+    data.spots.forEach(spot => {
+      const item = document.createElement('div');
+      item.className = 'trip-item';
+
+      const name = document.createElement('span');
+      name.textContent = spot;
+
+      const button = document.createElement('button');
+      button.className = 'trip-button';
+      button.textContent = '🌐 官網';
+      button.onclick = () => alert('開啟官網（示例）');
+
+      item.appendChild(name);
+      item.appendChild(button);
+      spotList.appendChild(item);
+    });
+
+    card.appendChild(spotList);
+
+    title.addEventListener('click', () => {
+      spotList.style.display = (spotList.style.display === 'none') ? 'block' : 'none';
+    });
+
+    container.appendChild(card);
+  }
+
+  const placeholder = document.querySelector('.trip-card');
+  if (placeholder) placeholder.replaceWith(container);
+  else document.body.insertBefore(container, document.body.firstChild);
+}
+
+document.addEventListener('DOMContentLoaded', generateItinerary);
 </script></body></html>

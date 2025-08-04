@@ -668,7 +668,7 @@ async function fetchExchangeRates(retry = 0) {
     const data = await res.json();
     if (!data || !data.rates || !data.rates.HKD || !data.rates.DKK) throw new Error('API返回無效數據');
     
-    // Calculate HKD per EUR and HKD per DKK
+    // Correct calculation: EUR->HKD = rates.HKD, DKK->HKD = rates.HKD / rates.DKK
     const eurToHkd = data.rates.HKD;
     const dkkToHkd = data.rates.HKD / data.rates.DKK;
     

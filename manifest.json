@@ -1,9 +1,9 @@
 {
-  "name": "北歐設計與文化慢旅 – 行程與消費記錄",
-  "short_name": "Nordic Trip 2025",
+  "name": "Nordic Trip Planner 2025",
+  "short_name": "NordicTrip",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#20415a",
+  "background_color": "#ffffff",
   "theme_color": "#20415a",
   "icons": [
     {

@@ -90,7 +90,16 @@
       background: #20415a;
       color: #fff;
     }
-  </style>
+  
+.card-weather {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 6px;
+}
+.trip-title span {
+  font-weight: normal;
+}
+</style>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/><link href="manifest.json" rel="manifest"/><style>
 body {
   font-family: 'Arial', sans-serif;
@@ -892,6 +901,118 @@ function generateItinerary() {
   const placeholder = document.querySelector('.trip-card');
   if (placeholder) placeholder.replaceWith(container);
   else document.body.insertBefore(container, document.body.firstChild);
+}
+
+document.addEventListener('DOMContentLoaded', generateItinerary);
+</script><script>
+// === Enhanced Auto Itinerary with Weather + Real Links + Toggle Arrows ===
+const itinerary = {
+  "2025-08-10": {
+    city: "哥本哈根",
+    spots: [
+      {name: "新港 Nyhavn", url: "https://www.visitcopenhagen.com/nyhavn"},
+      {name: "小美人魚雕像", url: "https://www.visitcopenhagen.com/little-mermaid"},
+      {name: "阿美琳堡宮", url: "https://www.kongernessamling.dk/en/amalienborg/"},
+      {name: "羅森堡宮", url: "https://www.kongernessamling.dk/en/rosenborg/"}
+    ]
+  },
+  "2025-08-11": {
+    city: "哥本哈根",
+    spots: [
+      {name: "圓塔 Round Tower", url: "https://www.rundetaarn.dk/en/"},
+      {name: "大理石教堂 Marble Church", url: "https://www.marmorkirken.dk/"},
+      {name: "國家美術館 SMK", url: "https://www.smk.dk/en/"}
+    ]
+  },
+  "2025-08-12": {
+    city: "哥本哈根",
+    spots: [
+      {name: "克里斯蒂安堡宮", url: "https://www.christiansborgslot.dk/en/"},
+      {name: "市政廳廣場", url: "https://www.visitcopenhagen.com/copenhagen/planning/city-hall-square"},
+      {name: "步行街 Stroget", url: "https://www.visitcopenhagen.com/copenhagen/planning/str%C3%B8get"}
+    ]
+  }
+};
+
+const cityCoords = {
+  "哥本哈根": {lat: 55.6761, lon: 12.5683},
+  "赫爾辛基": {lat: 60.1699, lon: 24.9384},
+  "塔林": {lat: 59.4370, lon: 24.7536}
+};
+
+function generateItinerary() {
+  const container = document.createElement('div');
+  for (const [date, data] of Object.entries(itinerary)) {
+    const card = document.createElement('div');
+    card.className = 'trip-card collapsible';
+
+    const title = document.createElement('div');
+    title.className = 'trip-title';
+    const arrow = document.createElement('span');
+    arrow.textContent = ' ▼';
+    arrow.style.float = 'right';
+    title.textContent = `${date} ${data.city}行程`;
+    title.appendChild(arrow);
+    card.appendChild(title);
+
+    // weather info placeholder per card
+    const weatherDiv = document.createElement('div');
+    weatherDiv.className = 'card-weather';
+    weatherDiv.textContent = '載入天氣中...';
+    card.appendChild(weatherDiv);
+
+    const spotList = document.createElement('div');
+    spotList.className = 'spot-list';
+    spotList.style.display = 'none';
+
+    data.spots.forEach(spot => {
+      const item = document.createElement('div');
+      item.className = 'trip-item';
+
+      const name = document.createElement('span');
+      name.textContent = spot.name;
+
+      const button = document.createElement('a');
+      button.className = 'trip-button';
+      button.textContent = '🌐 官網';
+      button.href = spot.url || '#';
+      button.target = '_blank';
+
+      item.appendChild(name);
+      item.appendChild(button);
+      spotList.appendChild(item);
+    });
+
+    card.appendChild(spotList);
+
+    title.addEventListener('click', () => {
+      const isHidden = spotList.style.display === 'none';
+      spotList.style.display = isHidden ? 'block' : 'none';
+      arrow.textContent = isHidden ? ' ▲' : ' ▼';
+    });
+
+    container.appendChild(card);
+
+    // Fetch weather per card
+    fetchCityWeather(data.city, weatherDiv);
+  }
+
+  const placeholder = document.querySelector('.trip-card');
+  if (placeholder) placeholder.replaceWith(container);
+  else document.body.insertBefore(container, document.body.firstChild);
+}
+
+async function fetchCityWeather(city, element) {
+  try {
+    const loc = cityCoords[city] || cityCoords["哥本哈根"];
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current_weather=true`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const temp = data.current_weather.temperature;
+    element.textContent = `${city}天氣：${temp}°C ☀️ 晴`;
+  } catch(e) {
+    element.textContent = `${city}天氣獲取失敗`;
+  }
 }
 
 document.addEventListener('DOMContentLoaded', generateItinerary);

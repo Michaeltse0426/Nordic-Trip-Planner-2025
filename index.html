@@ -7,19 +7,11 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon-192.png">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f5f5f5;
-      color: #333;
-    }
-    header {
-      background: #20415a;
-      color: #fff;
-      padding: 20px;
-      text-align: center;
-    }
+    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f5f5f5; color:#333; }
+    header { background:#20415a; color:#fff; padding:20px; text-align:center; }
+    .card { background:#fff; margin:20px; padding:20px; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    .weather { font-size:0.9em; margin-bottom:10px; color:#555; }
+    ul { padding-left:20px; }
   </style>
 </head>
 <body>
@@ -27,9 +19,63 @@
     <h1>北歐設計與文化慢旅 – 行程與消費記錄</h1>
     <p>2025 年 8 月</p>
   </header>
-  <main>
-    <h2>App v10 – Card Weather Only (No Top Weather Bar)</h2>
-    <p>If you see this, v10 is deployed successfully.</p>
-  </main>
+  <main id="itinerary"></main>
+
+  <script>
+    async function fetchWeather(city) {
+      const apiKey = '77c94a0c472b21822cff6f94ef50375d';
+      const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=zh_tw`;
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        if(data.main) {
+          return `${data.main.temp.toFixed(1)}°C ${data.weather[0].description}`;
+        } else {
+          return "天氣資料不可用";
+        }
+      } catch {
+        return "天氣讀取錯誤";
+      }
+    }
+
+    async function fetchRates() {
+      try {
+        const res = await fetch("https://api.frankfurter.app/latest?from=EUR&to=HKD");
+        const data = await res.json();
+        const eur = data.rates.HKD;
+        const res2 = await fetch("https://api.frankfurter.app/latest?from=DKK&to=HKD");
+        const data2 = await res2.json();
+        const dkk = data2.rates.HKD;
+        return { eur, dkk };
+      } catch {
+        return null;
+      }
+    }
+
+    async function init() {
+      const itineraryContainer = document.getElementById('itinerary');
+      const response = await fetch('itinerary.json');
+      const itinerary = await response.json();
+
+      const rates = await fetchRates();
+      const rateInfo = document.createElement('div');
+      rateInfo.className = 'card';
+      rateInfo.innerHTML = rates
+        ? `匯率更新時間：${new Date().toLocaleString()}<br>EUR → HKD: ${rates.eur.toFixed(2)}<br>DKK → HKD: ${rates.dkk.toFixed(2)}`
+        : '匯率讀取失敗';
+      itineraryContainer.appendChild(rateInfo);
+
+      for (const day of itinerary) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const weather = await fetchWeather(day.city);
+        card.innerHTML = `<h3>${day.date} ${day.title}</h3>
+          <div class="weather">${day.city}：${weather}</div>
+          <ul>${day.places.map(p => `<li>${p}</li>`).join('')}</ul>`;
+        itineraryContainer.appendChild(card);
+      }
+    }
+    init();
+  </script>
 </body>
 </html>

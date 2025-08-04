@@ -1,68 +1,73 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>北歐設計與文化慢旅 – 行程與消費記錄</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #333; }
-    header { background: #20415a; color: white; padding: 20px; text-align: center; }
-    .trip-card { background: white; margin: 20px auto; padding: 20px; border-radius: 12px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.08); width: 90%; max-width: 600px; transition: all 0.5s ease; }
-    .trip-card:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
-    .date { font-weight: bold; font-size: 1.3em; margin-bottom: 5px; }
-    .weather { color: #555; margin-bottom: 10px; }
-    ul { margin: 0; padding-left: 20px; }
-  </style>
+<meta charset="UTF-8">
+<title>北歐設計與文化慢旅 - 行程與消費記錄</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<style>
+body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; }
+header { background: #20415a; color: white; padding: 20px; text-align: center; }
+.card { background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: 20px; padding: 20px; transition: 0.5s; }
+.card:hover { transform: translateY(-5px); }
+.weather { font-size: 16px; margin: 5px 0; }
+.fade-in { animation: fadeIn 1.2s ease-in; }
+@keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+</style>
 </head>
 <body>
 <header>
-  <h1>北歐設計與文化慢旅 – 行程與消費記錄</h1>
+  <h1>北歐設計與文化慢旅 - 行程與消費記錄</h1>
   <p>2025 年 8 月</p>
 </header>
-
 <div id="itinerary"></div>
 
 <script>
-const itinerary = [
-  {date: "2025-08-10", city: "Copenhagen", sites: ["新港 Nyhavn", "小美人魚雕像", "阿美琳堡宮", "羅森堡宮"], lat:55.6761, lon:12.5683},
-  {date: "2025-08-11", city: "Copenhagen", sites: ["圓塔 Round Tower", "大理石教堂 Marble Church", "國家美術館 SMK"], lat:55.6761, lon:12.5683},
-  {date: "2025-08-17", city: "Helsinki", sites: ["芬蘭國家博物館", "卡皮耶利咖啡館", "羅伊利海邊桑拿"], lat:60.1699, lon:24.9384}
+const itineraryData = [
+  { date: "2025-08-10", city: "Copenhagen", events: ["新港 Nyhavn", "小美人魚雕像", "阿美琳堡宮", "羅森堡宮"] },
+  { date: "2025-08-11", city: "Copenhagen", events: ["圓塔 Round Tower", "大理石教堂 Marble Church", "國家美術館 SMK"] },
+  { date: "2025-08-17", city: "Helsinki", events: ["芬蘭國家博物館", "卡皮耶利咖啡館", "羅伊利海邊桑拿"] }
 ];
 
-function renderItinerary() {
-  const container = document.getElementById("itinerary");
-  container.innerHTML = "";
-  itinerary.forEach(day => {
-    const card = document.createElement("div");
-    card.className = "trip-card";
-    card.innerHTML = `<div class="date">${day.date} ${day.city}行程</div>
-                      <div class="weather">載入天氣中...</div>
-                      <ul>${day.sites.map(s => `<li>${s}</li>`).join('')}</ul>`;
-    container.appendChild(card);
-    fetchWeather(day.lat, day.lon, card.querySelector(".weather"), day.city);
-  });
+const weatherApiKey = "77c94a0c472b21822cff6f94ef50375d"; 
+const itineraryContainer = document.getElementById('itinerary');
+
+async function fetchWeather(city) {
+  try {
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&lang=zh_tw&appid=${weatherApiKey}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.main) {
+      return {
+        temp: data.main.temp.toFixed(1),
+        wind: data.wind.speed.toFixed(1),
+        icon: data.weather[0].icon
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
-function fetchWeather(lat, lon, weatherEl, city) {
-  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`)
-    .then(res => res.json())
-    .then(data => {
-      if(data.current_weather){
-        const temp = data.current_weather.temperature;
-        const wind = data.current_weather.windspeed;
-        weatherEl.textContent = `${city}：${temp}°C 🌤 風速 ${wind} km/h`;
-        localStorage.setItem(city+"_weather", weatherEl.textContent);
-      } else {
-        showCachedWeather(weatherEl, city);
-      }
-    })
-    .catch(() => showCachedWeather(weatherEl, city));
-}
+async function renderItinerary() {
+  for (let item of itineraryData) {
+    const card = document.createElement('div');
+    card.className = 'card fade-in';
+    
+    let weatherInfo = '<div class="weather">天氣資料不可用</div>';
+    const weather = await fetchWeather(item.city);
+    if (weather) {
+      weatherInfo = `<div class="weather">${item.city}：${weather.temp}°C 
+        <img src="https://openweathermap.org/img/wn/${weather.icon}.png" alt="weather" style="vertical-align:middle;"> 
+        風速 ${weather.wind} km/h</div>`;
+    }
 
-function showCachedWeather(weatherEl, city) {
-  const cached = localStorage.getItem(city+"_weather");
-  weatherEl.textContent = cached || (city+"：天氣資料不可用");
+    card.innerHTML = `<h3>${item.date} ${item.city}行程</h3>${weatherInfo}<ul>` +
+                     item.events.map(e => `<li>${e}</li>`).join('') +
+                     `</ul>`;
+    itineraryContainer.appendChild(card);
+  }
 }
 
 renderItinerary();

@@ -4,44 +4,68 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>北歐設計與文化慢旅 – 行程與消費記錄</title>
-  <link rel="manifest" href="manifest.json">
   <style>
-    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f5f5f5; color:#333; }
-    header { background:#20415a; color:#fff; text-align:center; padding:20px; }
-    .update-banner { text-align:center; background:#dff0d8; color:#20415a; padding:10px; display:none; }
-    .card { background:#fff; margin:20px; padding:20px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.1); transition:transform 0.3s ease; }
-    .card:hover { transform:scale(1.02); }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #333; }
+    header { background: #20415a; color: white; padding: 20px; text-align: center; }
+    .trip-card { background: white; margin: 20px auto; padding: 20px; border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.08); width: 90%; max-width: 600px; transition: all 0.5s ease; }
+    .trip-card:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
+    .date { font-weight: bold; font-size: 1.3em; margin-bottom: 5px; }
+    .weather { color: #555; margin-bottom: 10px; }
+    ul { margin: 0; padding-left: 20px; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>北歐設計與文化慢旅 – 行程與消費記錄</h1>
-    <p>2025 年 8 月</p>
-  </header>
-  <div class="update-banner" id="updateBanner">New Offline Version Loaded ✅</div>
+<header>
+  <h1>北歐設計與文化慢旅 – 行程與消費記錄</h1>
+  <p>2025 年 8 月</p>
+</header>
 
-  <div class="card">
-    <h2>2025-08-10 哥本哈根行程</h2>
-    <p>Copenhagen：天氣資料不可用</p>
-    <ul>
-      <li>新港 Nyhavn</li>
-      <li>小美人魚雕像</li>
-      <li>阿美琳堡宮</li>
-      <li>羅森堡宮</li>
-    </ul>
-  </div>
+<div id="itinerary"></div>
 
-  <script>
-    // Show update banner for 2s
-    document.getElementById('updateBanner').style.display = 'block';
-    setTimeout(()=>{ document.getElementById('updateBanner').style.display = 'none'; }, 2000);
+<script>
+const itinerary = [
+  {date: "2025-08-10", city: "Copenhagen", sites: ["新港 Nyhavn", "小美人魚雕像", "阿美琳堡宮", "羅森堡宮"], lat:55.6761, lon:12.5683},
+  {date: "2025-08-11", city: "Copenhagen", sites: ["圓塔 Round Tower", "大理石教堂 Marble Church", "國家美術館 SMK"], lat:55.6761, lon:12.5683},
+  {date: "2025-08-17", city: "Helsinki", sites: ["芬蘭國家博物館", "卡皮耶利咖啡館", "羅伊利海邊桑拿"], lat:60.1699, lon:24.9384}
+];
 
-    // Register service worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js')
-        .then(reg => console.log("Service Worker registered", reg))
-        .catch(err => console.error("SW registration failed", err));
-    }
-  </script>
+function renderItinerary() {
+  const container = document.getElementById("itinerary");
+  container.innerHTML = "";
+  itinerary.forEach(day => {
+    const card = document.createElement("div");
+    card.className = "trip-card";
+    card.innerHTML = `<div class="date">${day.date} ${day.city}行程</div>
+                      <div class="weather">載入天氣中...</div>
+                      <ul>${day.sites.map(s => `<li>${s}</li>`).join('')}</ul>`;
+    container.appendChild(card);
+    fetchWeather(day.lat, day.lon, card.querySelector(".weather"), day.city);
+  });
+}
+
+function fetchWeather(lat, lon, weatherEl, city) {
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`)
+    .then(res => res.json())
+    .then(data => {
+      if(data.current_weather){
+        const temp = data.current_weather.temperature;
+        const wind = data.current_weather.windspeed;
+        weatherEl.textContent = `${city}：${temp}°C 🌤 風速 ${wind} km/h`;
+        localStorage.setItem(city+"_weather", weatherEl.textContent);
+      } else {
+        showCachedWeather(weatherEl, city);
+      }
+    })
+    .catch(() => showCachedWeather(weatherEl, city));
+}
+
+function showCachedWeather(weatherEl, city) {
+  const cached = localStorage.getItem(city+"_weather");
+  weatherEl.textContent = cached || (city+"：天氣資料不可用");
+}
+
+renderItinerary();
+</script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open('nordic-trip-cache-v4').then(cache => {
+    caches.open('nordic-trip-cache-v5').then(cache => {
       return cache.addAll([
         './',
         './index.html',

@@ -664,12 +664,17 @@ function loadRates() {
 }
 async function fetchExchangeRates(retry = 0) {
   try {
-    const res = await fetch('https://api.frankfurter.app/latest?from=HKD&to=EUR,DKK');
+    const res = await fetch('https://api.frankfurter.app/latest?from=EUR&to=HKD,DKK');
     const data = await res.json();
-    if (!data || !data.rates) throw new Error('API返回無效數據');
+    if (!data || !data.rates || !data.rates.HKD || !data.rates.DKK) throw new Error('API返回無效數據');
+    
+    // Calculate HKD per EUR and HKD per DKK
+    const eurToHkd = data.rates.HKD;
+    const dkkToHkd = data.rates.HKD / data.rates.DKK;
+    
     const rates = {
-      EUR: data.rates.EUR,
-      DKK: data.rates.DKK
+      EUR: eurToHkd,
+      DKK: dkkToHkd
     };
     const record = { rates: rates, updatedAt: new Date().toISOString() };
     saveRates(record);

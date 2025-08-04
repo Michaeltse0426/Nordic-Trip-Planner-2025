@@ -1,7 +1,15 @@
-self.addEventListener('install', e => {
-    self.skipWaiting();
+self.addEventListener('install', event => {
+  event.waitUntil(caches.open('nordic-trip-cache-v1').then(cache => cache.addAll([
+    './',
+    './index.html',
+    './manifest.json'
+  ])));
 });
 
-self.addEventListener('fetch', e => {
-    e.respondWith(fetch(e.request).catch(() => new Response('Offline Mode')));
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request);
+    })
+  );
 });

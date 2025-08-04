@@ -1,19 +1,47 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>北歐設計與文化慢旅 – 行程與消費記錄</title>
-    <link rel="manifest" href="manifest.json">
-    <script>
-        // Simple check script
-        document.addEventListener("DOMContentLoaded", () => {
-            document.body.innerHTML += "<h2 style='text-align:center;margin-top:50px;color:#20415a;'>New Offline Version Loaded ✅</h2>";
-        });
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>北歐設計與文化慢旅 – 行程與消費記錄</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f5f5f5; color:#333; }
+    header { background:#20415a; color:#fff; text-align:center; padding:20px; }
+    .update-banner { text-align:center; background:#dff0d8; color:#20415a; padding:10px; display:none; }
+    .card { background:#fff; margin:20px; padding:20px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.1); transition:transform 0.3s ease; }
+    .card:hover { transform:scale(1.02); }
+  </style>
 </head>
 <body>
-    <h1 style="text-align:center;">北歐設計與文化慢旅 – 行程與消費記錄</h1>
-    <p style="text-align:center;">2025 年 8 月</p>
+  <header>
+    <h1>北歐設計與文化慢旅 – 行程與消費記錄</h1>
+    <p>2025 年 8 月</p>
+  </header>
+  <div class="update-banner" id="updateBanner">New Offline Version Loaded ✅</div>
+
+  <div class="card">
+    <h2>2025-08-10 哥本哈根行程</h2>
+    <p>Copenhagen：天氣資料不可用</p>
+    <ul>
+      <li>新港 Nyhavn</li>
+      <li>小美人魚雕像</li>
+      <li>阿美琳堡宮</li>
+      <li>羅森堡宮</li>
+    </ul>
+  </div>
+
+  <script>
+    // Show update banner for 2s
+    document.getElementById('updateBanner').style.display = 'block';
+    setTimeout(()=>{ document.getElementById('updateBanner').style.display = 'none'; }, 2000);
+
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(reg => console.log("Service Worker registered", reg))
+        .catch(err => console.error("SW registration failed", err));
+    }
+  </script>
 </body>
 </html>
